@@ -44,6 +44,7 @@ const ok = require('okay');
 module.exports = function build(done) {
     const serverBuilder = new Builder();
 
+
     serverBuilder.build(ok(function (app) {
         beforeExit = _.get(app, 'services.beforeExit');
         done(app);

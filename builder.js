@@ -13,34 +13,31 @@ const fs = require('fs');
  * @param {string} folder Folder location to search through
  * @returns {object} Nested tree of the found files
  */
-function getFilesRecursive (folder) {
+function getPackageJsonFilesRecursive (folder) {
     var fileContents = fs.readdirSync(folder),
-        fileTree = [],
+        packages = [],
         stats;
 
     fileContents.forEach(function (fileName) {
         stats = fs.lstatSync(folder + '/' + fileName);
 
         if (stats.isDirectory()) {
-            fileTree.push({
-                name: fileName,
-                children: getFilesRecursive(folder + '/' + fileName)
-            });
+            packages = packages.concat(getPackageJsonFilesRecursive(folder + '/' + fileName));
         } else {
-            fileTree.push({
-                name: fileName
-            });
+            if(fileName === 'package.json') {
+                packages.push(process.cwd() + '/' + folder + '/' + fileName);
+            }
         }
     });
 
-    return fileTree;
+    return packages;
 };
 
 /**
  * Builder for building an app using a definition file or dependency array
  * @constructor
  */
-const Builder = function () {
+const Builder = function (definition) {
 };
 
 Builder.prototype.build = function (done) {
@@ -49,11 +46,20 @@ Builder.prototype.build = function (done) {
     const wholeServerConfig = [];
     let consumes;
     const configPath = path.join(__dirname, 'serverConfig.js');
-    // const serverConfig = architect.loadConfig(configPath);
-    _.chain(['node_modules', 'plugins']).map(getFilesRecursive).union().each((dir) => {
-        console.log(dir);
-    });
-    /*
+    const serverConfig = architect.loadConfig(configPath);
+   /* _.chain(['node_modules', 'plugins']).map(getPackageJsonFilesRecursive).union().flatten().each((dir) => {
+        var packageJson = require(dir);
+        if(packageJson.architect) {
+            console.log(`architect module `, packageJson.name);
+        }
+        if(packageJson.server) {
+            console.log(`server module `, packageJson.name);
+        }
+        if(packageJson.plugin) {
+            console.log(`plugin module `, packageJson.name);
+        }
+    }).value();*/
+
     if (this.definitionFile) {
         const mainServerPath = path.join(__dirname, this.definitionFile);
         const mainServerConfig = architect.loadConfig(mainServerPath);
@@ -122,7 +128,6 @@ Builder.prototype.build = function (done) {
     catch (e) {
         console.log(e);
     }
-     */
 };
 
 module.exports = Builder;
