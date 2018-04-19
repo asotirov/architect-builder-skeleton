@@ -5,10 +5,12 @@
   "architect": true,
   "dependencies": {
     "architect": "^0.1.11",
+    "esprima": "^4.0.0",
     "lodash": "^4.13.1",
     "okay": "^1.0.0"
   },
+  "server": [],
   "engines": {
-    "node": ">=6.7.0"
+    "node": ">=8.9.1"
   }
 }
