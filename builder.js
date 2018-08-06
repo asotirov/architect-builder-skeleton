@@ -222,12 +222,24 @@ class Builder {
 
         const depTree = {};
         const pluginTree = {};
+        const optionProvidesForPlugins = _.chain(pluginsChain)
+            .find({name: 'options'})
+            .get('provides')
+            .map((p) => p.split('.')[1])
+            .value();
+
+        function getAdditionalOptionsConsumesForLegacyModule(name) {
+            if (optionProvidesForPlugins.includes(name)) {
+                return [`options.${name}`];
+            }
+            return [];
+        }
 
         const serverConfig = _.map(pluginsChain, (p) => ({
             packagePath: path.join('./', p.folder),
             main: p.main,
             name: p.name,
-            consumes: p.consumes,
+            consumes: _.uniq(p.consumes.concat(getAdditionalOptionsConsumesForLegacyModule(p.name))),
             provides: p.provides,
             setup: p.setup
         }));
